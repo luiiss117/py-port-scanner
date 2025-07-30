@@ -19,7 +19,7 @@ start = time.time()
 
 # Port scan function that scans all 65535 TCP ports
 def scan():
-   for port in range(65536):
+   for port in range(1, 65536):
       s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
       s.settimeout(0.5)
       try:
