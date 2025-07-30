@@ -21,13 +21,13 @@ $ cd py-port-scanner
 ```
 ---
 
-## Usage
+## ⚡️ Usage
 ```
 $ python3 port_scanner.py -i <TARGET_IP>
 ```
 ---
 
-## Example
+## 💡 Example
 ```
 $ python3 port_scanner.py -i 127.0.0.1
 [+] Port 53 is open.
