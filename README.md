@@ -15,11 +15,12 @@ An asynchronous TCP port scanner in Python that scan all 65 535 TCP ports on a
 
 ## 🛠️ Installation
 
-1. Clone the repository:
+1. Clone the repository and it is ready to run:
 
 ```
 $ git clone https://github.com/luiiss117/py-port-scanner.git
 $ cd py-port-scanner
+$ python3 port_scanner.py
 ```
 ---
 
