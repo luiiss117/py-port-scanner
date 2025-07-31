@@ -1,57 +1,77 @@
-import socket
 import time
 from collections import defaultdict
 import argparse
+import asyncio
 
 # Initialize parser
 parser = argparse.ArgumentParser()
 
 parser.add_argument("-i", "--ip", help = "IPv4 address of the target host")
-parser.parse_args()
+parser.add_argument("-t", "--tasks", type=int, default=100, help = "Maximum number of tasks at once.")
 args = parser.parse_args()
 
-host_ip = args.ip
+if args.ip:
+   host_ip = args.ip
+else:
+   print("Error, an IP address is necessary")    
+   exit(1)
+
+max_tasks = args.tasks
+print(f"Set {max_tasks} tasks") 
+
+ports_to_scan =  65536
 
 results = defaultdict(list)
 
 # Initialize timer
 start = time.time()
 
-# Port scan function that scans all 65535 TCP ports
-def scan():
-   for port in range(1, 65536):
-      s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-      s.settimeout(0.5)
+# Port scan function that scans all 65535 TCP ports 
+async def scan(semaphore, port):
+   async with semaphore:   
       try:
-         result = s.connect_ex((host_ip, port))
-         if result == 0:
-            print(f"[+] Port {port} is open.")
-            results["open"].append(port)
-         else:
-            results["closed"].append(port)
-      except socket.timeout:
-         print("Connection timed out")
+         conn = asyncio.open_connection(host_ip, port)
+         reader, writer = await asyncio.wait_for(conn, timeout=1)
+         writer.close()
+         await writer.wait_closed()
+         print(f"[+] Port: {port} is open")
+         results["open"].append(port)
+       # Exceptions for errors  
+      except ConnectionRefusedError:
+         results["closed"].append(port)
+      except asyncio.TimeoutError:
          results["unresponsive"].append(port)
-      finally:
-         s.close()
+      except OSError:
+         results["error"].append(port)
 
-# Calling the scan function
-scan()
+async def main():
+   semaphore = asyncio.Semaphore(max_tasks) 
+   tasks = []    
+   for p in range(1, ports_to_scan):
+      tasks.append(scan(semaphore, p)) 
+   await asyncio.gather(*tasks)
 
-# End timer
-end = time.time()
-duration = end - start
+# Timer and run main function
+try:
+   start = time.time()
+   asyncio.run(main())
+except KeyboardInterrupt:
+    print("Stopped")
+finally:
+   end = time.time()
+   duration = end - start
+
 
 # Calculate the total length of the lists
-def calculate_list_length(x):
-   list_length = len(results[x])
+def calculate_list_length(status_of_port):
+   list_length = len(results[status_of_port])
    return list_length
 
 # Adds the length of all lists
-all_ports = len(results["open"]) + len(results["closed"]) + len(results["unresponsive"])
+all_ports = len(results["open"]) + len(results["closed"]) + len(results["unresponsive"]) + len(results["error"])
 
 print(f"Total open ports: {calculate_list_length('open')}")
 print(f"Total closed ports: {calculate_list_length('closed')}")
 print(f"Total unresponsive ports: {calculate_list_length('unresponsive')}")
+print(f"Total error ports: {calculate_list_length('error')}")
 print(f"Scanned {all_ports} TCP ports in {duration:.2f} seconds.")
-exit(0)
