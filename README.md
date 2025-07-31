@@ -7,7 +7,9 @@ An asynchronous TCP port scanner in Python that scan all 65 535 TCP ports on a
 - **Full TCP port scan** (0–65535)  
 - **Port state classification**: open, closed, unresponsive  
 - **Lightweight & no external dependencies**  
-- **IPv4 support**  
+- **IPv4 support**
+- **Timeout configuration**
+- **Number of maximum tasks to run simultaneously**  
 
 ---
 
