@@ -7,15 +7,17 @@ import asyncio
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--ip", help = "IPv4 address of the target host")
 parser.add_argument("-t", "--tasks", type=int, default=100, help = "Maximum number of tasks at once.")
+parser.add_argument("--timeout", type=int, default=1, help = "Timeout in seconds.")
 args = parser.parse_args()
 
-if args.ip:
-   host_ip = args.ip
-else:
+
+
+if args.ip == None:
    print("Error, an IP address is necessary")    
    exit(1)
 
 max_tasks = args.tasks
+timeout = args.timeout
 
 ports_to_scan =  65536
 
@@ -28,8 +30,8 @@ start = time.time()
 async def scan(semaphore, port):
    async with semaphore:   
       try:
-         conn = asyncio.open_connection(host_ip, port)
-         reader, writer = await asyncio.wait_for(conn, timeout=1)
+         conn = asyncio.open_connection(args.ip, port)
+         reader, writer = await asyncio.wait_for(conn, timeout=args.timeout)
          writer.close()
          await writer.wait_closed()
          print(f"[+] Port: {port} is open")
@@ -43,7 +45,7 @@ async def scan(semaphore, port):
          results["error"].append(port)
 
 async def main():
-   semaphore = asyncio.Semaphore(max_tasks) 
+   semaphore = asyncio.Semaphore(args.tasks) 
    tasks = []    
    for p in range(1, ports_to_scan):
       tasks.append(scan(semaphore, p)) 
@@ -52,7 +54,7 @@ async def main():
 # Timer and run main function
 try:
    start = time.time()
-   print(f"Set {max_tasks} tasks") 
+   print(f"Running {max_tasks} tasks at once") 
    asyncio.run(main())
 except KeyboardInterrupt:
     print("Stopped")
