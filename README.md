@@ -1,5 +1,5 @@
 # py-port-scanner
-A TCP port scanner in Python powered by asyncio that scan all 65 535 TCP ports on a given host, categorize results as open/closed/unresponsive, and display a concise summary.
+An asynchronous TCP port scanner in Python that scan all 65 535 TCP ports on a given host, categorize results and display a concise summary.
 
 
 ## 🚀 Features
