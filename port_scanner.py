@@ -23,9 +23,6 @@ ports_to_scan =  65536
 
 results = defaultdict(list)
 
-# Initialize timer
-start = time.time()
-
 # Port scan function that scans all 65535 TCP ports 
 async def scan(semaphore, port):
    async with semaphore:   
