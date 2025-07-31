@@ -5,7 +5,6 @@ import asyncio
 
 # Initialize parser
 parser = argparse.ArgumentParser()
-
 parser.add_argument("-i", "--ip", help = "IPv4 address of the target host")
 parser.add_argument("-t", "--tasks", type=int, default=100, help = "Maximum number of tasks at once.")
 args = parser.parse_args()
@@ -17,7 +16,6 @@ else:
    exit(1)
 
 max_tasks = args.tasks
-print(f"Set {max_tasks} tasks") 
 
 ports_to_scan =  65536
 
@@ -54,6 +52,7 @@ async def main():
 # Timer and run main function
 try:
    start = time.time()
+   print(f"Set {max_tasks} tasks") 
    asyncio.run(main())
 except KeyboardInterrupt:
     print("Stopped")
