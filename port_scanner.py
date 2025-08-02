@@ -23,7 +23,7 @@ ports_to_scan =  65536
 
 results = defaultdict(list)
 
-# Port scan function that scans all 65535 TCP ports 
+# Port scan coroutine that scans all 65535 TCP ports 
 async def scan(semaphore, port):
    async with semaphore:   
       try:
@@ -40,7 +40,7 @@ async def scan(semaphore, port):
          results["unresponsive"].append(port)
       except OSError:
          results["error"].append(port)
-
+# Main coroutine
 async def main():
    semaphore = asyncio.Semaphore(args.tasks) 
    tasks = []    
@@ -48,7 +48,7 @@ async def main():
       tasks.append(scan(semaphore, p)) 
    await asyncio.gather(*tasks)
 
-# Timer and run main function
+# Run timer and main
 try:
    start = time.time()
    print(f"Running {max_tasks} tasks at once") 
