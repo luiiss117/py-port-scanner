@@ -9,6 +9,7 @@ An asynchronous TCP port scanner in Python that scan all 65 535 TCP ports on a
 - **Lightweight & no external dependencies**  
 - **IPv4 support**
 - **Timeout configuration**
+- **Top ports scan (10 or 100 most common) with --top-ports 10|100| (scan 1000 ports by default)**
 - **Number of maximum tasks to run simultaneously**  
 
 ---
@@ -32,15 +33,18 @@ python3 port_scanner.py -i <TARGET_IP>
 
 ## 💡 Example
 ```
-python3 port_scanner.py -i 127.0.0.1 -t 500 --timeout 3
-Running 500 tasks at once
-[+] Port: 53 is open
-[+] Port: 45815 is open
-[+] Port: 55788 is open
-Total open ports: 3
-Total closed ports: 65532
-Total unresponsive ports: 0
+port_scanner.py -i 127.0.0.1 --top 100 -t 50 --timeout 2 
+Running 50 tasks simultaneously
+Scanning 100 ports...
+[+] Port: 80 is open
+[+] Port: 135 is open
+[+] Port: 443 is open
+[+] Port: 445 is open
+[+] Port: 5357 is open
+Total open ports: 5
+Total closed ports: 0
+Total unresponsive ports: 95
 Total error ports: 0
-Scanned 65535 TCP ports in 19.48 seconds.
+Scanned 100 TCP ports in 4.04 seconds.
 ```
 
