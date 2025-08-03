@@ -1,25 +1,28 @@
-import time
+import asyncio, time, argparse, port_list
 from collections import defaultdict
-import argparse
-import asyncio
 
 # Initialize parser
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--ip", help = "IPv4 address of the target host")
 parser.add_argument("-t", "--tasks", type=int, default=100, help = "Maximum number of tasks at once.")
 parser.add_argument("--timeout", type=int, default=1, help = "Timeout in seconds.")
+parser.add_argument("--top-five", action='store_true', help = "Scan the top 5 ports.")
+parser.add_argument("--top-ten", action='store_true', help = "Scan the top 10 ports.")
 args = parser.parse_args()
 
-
-
-if args.ip == None:
+if args.ip is None:
    print("Error, an IP address is necessary")    
    exit(1)
 
 max_tasks = args.tasks
 timeout = args.timeout
 
-ports_to_scan =  65536
+if args.top_five:
+   ports_to_scan = port_list.top_five
+if args.top_ten:
+   ports_to_scan = port_list.top_ten
+
+
 
 results = defaultdict(list)
 
@@ -44,20 +47,21 @@ async def scan(semaphore, port):
 async def main():
    semaphore = asyncio.Semaphore(args.tasks) 
    tasks = []    
-   for p in range(1, ports_to_scan):
+   for p in ports_to_scan:
       tasks.append(scan(semaphore, p)) 
    await asyncio.gather(*tasks)
 
 # Run timer and main
-try:
-   start = time.time()
-   print(f"Running {max_tasks} tasks at once") 
-   asyncio.run(main())
-except KeyboardInterrupt:
-    print("Stopped")
-finally:
-   end = time.time()
-   duration = end - start
+if __name__ == "__main__":
+   try:
+      start = time.time()
+      print(f"Running {max_tasks} tasks at once")
+      asyncio.run(main())
+   except KeyboardInterrupt:
+       print("Stopped")
+   finally:
+      end = time.time()
+      duration = end - start
 
 
 # Calculate the total length of the lists
