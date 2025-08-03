@@ -13,7 +13,7 @@ group.add_argument("-p-", action="store_true", help = "Scan all ports.")
 args = parser.parse_args()
 
 results = defaultdict(list)
-
+# Ports options
 async def ports(num):
    if args.port:
       ports_to_scan = args.port
@@ -31,7 +31,7 @@ async def ports(num):
 
 # Port scan coroutine
 async def scan(semaphore, port):
-   async with semaphore:   
+   async with semaphore:
       try:
          conn = asyncio.open_connection(args.ip, port)
          reader, writer = await asyncio.wait_for(conn, timeout=args.timeout)
@@ -39,7 +39,7 @@ async def scan(semaphore, port):
          await writer.wait_closed()
          print(f"[+] Port: {port} is open")
          results["open"].append(port)
-       # Exceptions for errors  
+       # Exceptions for errors
       except ConnectionRefusedError:
          results["closed"].append(port)
       except asyncio.TimeoutError:
@@ -47,7 +47,7 @@ async def scan(semaphore, port):
       except OSError:
          results["error"].append(port)
 
-# Main coroutine
+# Main coroutine to create tasks
 async def main():
    ports_to_scan = await ports(args.top_ports)
    semaphore = asyncio.Semaphore(args.tasks)
@@ -74,7 +74,7 @@ def calculate_list_length(status_of_port):
    list_length = len(results[status_of_port])
    return list_length
 
-# Adds the length of all lists
+# Add the length of all lists
 all_ports = len(results["open"]) + len(results["closed"]) + len(results["unresponsive"]) + len(results["error"])
 
 print(f"Total open ports: {calculate_list_length('open')}")
