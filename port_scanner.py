@@ -3,30 +3,33 @@ from collections import defaultdict
 
 # Initialize parser
 parser = argparse.ArgumentParser()
-parser.add_argument("-i", "--ip", help = "IPv4 address of the target host")
+parser.add_argument("-i", "--ip", required=True, help = "IPv4 address of the target host")
+group = parser.add_mutually_exclusive_group()
 parser.add_argument("-t", "--tasks", type=int, default=100, help = "Maximum number of tasks at once.")
 parser.add_argument("--timeout", type=int, default=1, help = "Timeout in seconds.")
-parser.add_argument("--top-five", action='store_true', help = "Scan the top 5 ports.")
-parser.add_argument("--top-ten", action='store_true', help = "Scan the top 10 ports.")
+group.add_argument("--top-ports", type=int, choices=[10, 100, 1000], help = "Scan the top 5 ports.")
+group.add_argument("-p", "--port", nargs="+",type=int, help = "Specify custom ports to scan, e.g: '-p 22 80")
+group.add_argument("-p-", action="store_true", help = "Scan all ports.")
 args = parser.parse_args()
-
-if args.ip is None:
-   print("Error, an IP address is necessary")    
-   exit(1)
-
-max_tasks = args.tasks
-timeout = args.timeout
-
-if args.top_five:
-   ports_to_scan = port_list.top_five
-if args.top_ten:
-   ports_to_scan = port_list.top_ten
-
-
 
 results = defaultdict(list)
 
-# Port scan coroutine that scans all 65535 TCP ports 
+async def ports(num):
+   if args.port:
+      ports_to_scan = args.port
+      print("Scanning", len(ports_to_scan), "ports...")
+   elif args.p_:
+      ports_to_scan = range(1, 65536)
+      print(f"Scanning", len(ports_to_scan), " ports...")
+   elif args.top_ports:
+      ports_to_scan = port_list.top_list[num]
+      print(f"Scanning {len(port_list.top_list[num])} ports...")
+   else:
+      ports_to_scan = range(1, 1001)
+      print(f"Scanning {ports_to_scan} ports...")
+   return ports_to_scan
+
+# Port scan coroutine
 async def scan(semaphore, port):
    async with semaphore:   
       try:
@@ -43,19 +46,21 @@ async def scan(semaphore, port):
          results["unresponsive"].append(port)
       except OSError:
          results["error"].append(port)
+
 # Main coroutine
 async def main():
-   semaphore = asyncio.Semaphore(args.tasks) 
-   tasks = []    
+   ports_to_scan = await ports(args.top_ports)
+   semaphore = asyncio.Semaphore(args.tasks)
+   tasks = []
    for p in ports_to_scan:
-      tasks.append(scan(semaphore, p)) 
+      tasks.append(scan(semaphore, p))
    await asyncio.gather(*tasks)
 
 # Run timer and main
 if __name__ == "__main__":
    try:
       start = time.time()
-      print(f"Running {max_tasks} tasks at once")
+      print(f"Running {args.tasks} tasks simultaneously")
       asyncio.run(main())
    except KeyboardInterrupt:
        print("Stopped")
