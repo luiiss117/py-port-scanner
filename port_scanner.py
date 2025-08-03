@@ -7,7 +7,7 @@ parser.add_argument("-i", "--ip", required=True, help = "IPv4 address of the tar
 group = parser.add_mutually_exclusive_group()
 parser.add_argument("-t", "--tasks", type=int, default=100, help = "Maximum number of tasks at once.")
 parser.add_argument("--timeout", type=int, default=1, help = "Timeout in seconds.")
-group.add_argument("--top-ports", type=int, choices=[10, 100, 1000], help = "Scan the top 5 ports.")
+group.add_argument("--top-ports", type=int, choices=[10, 100], help = "Scan the top 5 ports.")
 group.add_argument("-p", "--port", nargs="+",type=int, help = "Specify custom ports to scan, e.g: '-p 22 80")
 group.add_argument("-p-", action="store_true", help = "Scan all ports.")
 args = parser.parse_args()
@@ -25,8 +25,8 @@ async def ports(num):
       ports_to_scan = port_list.top_list[num]
       print(f"Scanning {len(port_list.top_list[num])} ports...")
    else:
-      ports_to_scan = range(1, 1001)
-      print(f"Scanning {ports_to_scan} ports...")
+      ports_to_scan = port_list.top_list[1000]
+      print(f"Scanning {len(ports_to_scan[:1000])} ports...")
    return ports_to_scan
 
 # Port scan coroutine
@@ -82,3 +82,4 @@ print(f"Total closed ports: {calculate_list_length('closed')}")
 print(f"Total unresponsive ports: {calculate_list_length('unresponsive')}")
 print(f"Total error ports: {calculate_list_length('error')}")
 print(f"Scanned {all_ports} TCP ports in {duration:.2f} seconds.")
+
